@@ -178,7 +178,22 @@ Knit the document, commit your changes, and save it on GitHub. Don't forget to a
 Now let's find the weather stations by state with closest temperature and wind speed based on the euclidean distance from these medians. 
 
 ```{r}
+eu <- function(a,b,c,d){
+  return(sqrt((a-d[1])^2+(b-d[2])^2+(c-d[3])^2))
+}
+medians <- unname(c(quantile(met$temp, na.rm=TRUE)["50%"],quantile(met$wind.sp, na.rm=TRUE)["50%"],quantile(met$atm.press, na.rm=TRUE)["50%"]))
 
+rep_by_state <- met[,dist:=eu(temp,wind.sp,atm.press,medians)][
+  !is.na(temp)&!is.na(wind.sp)&!is.na(atm.press),.(closest=min(dist)),by=.(STATE)]
+rep_by_state <- merge(
+  x=rep_by_state,
+  y=met,
+  by.x = c("STATE", "closest"),
+  by.y = c("STATE", "dist"),
+  all.x = TRUE,
+  all.y=FALSE
+)
+rep_by_state
 ```
 
 Knit the doc and save it on GitHub.
